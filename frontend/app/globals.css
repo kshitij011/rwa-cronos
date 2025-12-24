@@ -1,0 +1,33 @@
+/* app/globals.css (The cleanest V4 approach) */
+@import "tailwindcss";
+@keyframes gradient-flow {
+    0% {
+        background-position: 0% 50%;
+    }
+    50% {
+        background-position: 100% 50%;
+    }
+    100% {
+        background-position: 0% 50%;
+    }
+}
+
+/* Custom Tailwind class to apply the gradient and animation */
+.animated-gradient-bg {
+    background: linear-gradient(-45deg, #4c089c, #a8034d, #3c096c, #a8034d);
+    background-size: 400% 400%;
+    animation: gradient-flow 15s ease infinite;
+}
+
+:root {
+  --font-body: var(--font-body);
+  --font-heading: var(--font-heading);
+}
+
+body {
+  font-family: var(--font-body), system-ui, sans-serif;
+}
+
+h1, h2, h3, h4 {
+  font-family: var(--font-heading), system-ui, sans-serif;
+}
