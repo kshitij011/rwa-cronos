@@ -270,7 +270,7 @@ export function BuySharesModal({ open, onOpenChange, property, onSharesMinted, o
             <div className="p-4 rounded-xl bg-secondary  mb-6">
                 {/* MINTING BOX */}
                     <p className="text-sm font-semibold text-muted-foreground mb-3">
-                    Minting Transaction Hash
+                    Transaction Hash
                     </p>
 
                     {/* Hash + Copy */}
