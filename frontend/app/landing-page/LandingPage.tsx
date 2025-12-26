@@ -18,6 +18,7 @@ import { BuySharesModal } from "../components/BuySharesModal";
 
 export default function LandingPage() {
   const { kycStatus, updateKycStatus } = useKyc();
+  console.log("Rendered LandingPage with KYC Status:", kycStatus);
 
   const { openConnectModal } = useConnectModal();
   const { isConnected, address } = useAccount();
@@ -26,12 +27,13 @@ export default function LandingPage() {
   const [showBuyModal, setShowBuyModal] = useState(false);
   const [selectedProperty, setSelectedProperty] = useState<Property | null>(null);
   const [refreshKey, setRefreshKey] = useState(0);
+  const [num, setNum] = useState(0);
 
   const handlePurchaseSuccess = () => {
     setRefreshKey((k) => k + 1);
   };
 
-  console.log("KYC Status:", kycStatus);
+  // console.log("KYC Status:", kycStatus);
 
   const handleSelectProperty = (property: Property) => {
     if (!isConnected) {
@@ -122,6 +124,7 @@ export default function LandingPage() {
                       onSelectProperty={handleSelectProperty}
                       refreshKey={refreshKey}
                       kycStatus={kycStatus}
+                      num={num}
                     />
                 </div>
             </div>
@@ -134,6 +137,8 @@ export default function LandingPage() {
                 onSharesMinted={() => setRefreshKey((k) => k + 1)}
                 onSuccess={handlePurchaseSuccess}
                 address={address!}
+                setNum={setNum}
+                num={num}
               />
             )}
 

@@ -8,7 +8,7 @@ import { Minus, Plus, Wallet, ArrowRight, CheckCircle2, Loader2, Copy, ExternalL
 import { toast } from "@/app/hooks/use-toast";
 import { useUSDCBalance } from "@/app/hooks/useUSDCBalance";
 import { useWalletClient } from "wagmi";
-import { createX402Fetch } from "@/app/components/utils/x402Client";
+import { x402Fetch } from "@/app/components/utils/x402Cronos";
 
 interface BuySharesModalProps {
   open: boolean;
@@ -17,9 +17,11 @@ interface BuySharesModalProps {
   onSharesMinted: () => void;
   onSuccess: () => void;
   address: `0x${string}`;
+  setNum: React.Dispatch<React.SetStateAction<number>>;
+  num: number;
 }
 
-export function BuySharesModal({ open, onOpenChange, property, onSharesMinted, onSuccess, address }: BuySharesModalProps) {
+export function BuySharesModal({ open, onOpenChange, property, onSharesMinted, onSuccess, address, setNum, num }: BuySharesModalProps) {
   const [quantity, setQuantity] = useState(1);
   const [isPurchasing, setIsPurchasing] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
@@ -33,7 +35,7 @@ export function BuySharesModal({ open, onOpenChange, property, onSharesMinted, o
   const remainingShares = property.totalShares - property.sharesSold;
 
   const mintExplorerUrl = mintTxHash
-  ? `https://sepolia.basescan.org/tx/${mintTxHash}`
+  ? `https://explorer.cronos.org/testnet/tx/${mintTxHash}`
   : '#';
 
   const slicedMintHash = mintTxHash
@@ -81,11 +83,9 @@ export function BuySharesModal({ open, onOpenChange, property, onSharesMinted, o
     try {
         setIsPurchasing(true);
 
-        const fetchWithPayment = createX402Fetch(walletClient);
-
-        const response = await fetchWithPayment(
-          "https://x402-rwa-evm.onrender.com/purchase",
-        // "http://localhost:4000/purchase",
+        const response = await x402Fetch( walletClient!,
+          // "https://x402-rwa-evm.onrender.com/purchase",
+        "http://localhost:4000/api/purchase",
         {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -102,10 +102,30 @@ export function BuySharesModal({ open, onOpenChange, property, onSharesMinted, o
         throw new Error("Purchase failed");
         }
 
+        const response2 = await x402Fetch( walletClient!,
+          // "https://x402-rwa-evm.onrender.com/purchase",
+        "http://localhost:4000/mint",
+        {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+            propertyId: property.id,
+            quantity,
+            buyer: address,
+            totalPrice: totalCost.toFixed(2),
+            }),
+        }
+        );
+
         const data = await response.json();
         console.log("Response:", data);
 
-        setTxHash(data.paymentTxHash);
+        setNum(num+quantity);
+        let newValue = num + quantity;
+
+        localStorage.setItem(`TxNounce_${property.id}`, newValue.toString());
+
+        // setTxHash(data.paymentTxHash);
         setMintTxHash(data.mintTxHash);
 
         refresh();
@@ -114,10 +134,6 @@ export function BuySharesModal({ open, onOpenChange, property, onSharesMinted, o
         onSuccess();
         setIsSuccess(true);
 
-        // toast({
-        // title: "Purchase Successful 🎉",
-        // description: "Payment and mint completed",
-        // });
     } catch (err: any) {
         console.error("Purchase failed:", err);
         toast({
@@ -282,7 +298,7 @@ export function BuySharesModal({ open, onOpenChange, property, onSharesMinted, o
                 disabled={!mintTxHash}
                 >
                 <ExternalLink className="h-4 w-4 mr-2" />
-                View on Base Explorer
+                View on Cronos Explorer
                 </Button>
             </div>
             <Button variant="gold" onClick={handleClose}>

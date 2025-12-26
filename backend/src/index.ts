@@ -5,49 +5,56 @@ const app = express();
 app.use(express.json());
 import { approveKycUser } from "./blockchain/approveKYC.ts";
 import { mintShares } from "./blockchain/mintShares.ts";
-
 import cors from "cors";
+import type { CorsOptions } from "cors";
 
-app.use(
-  cors({
-    origin: (origin, callback) => {
-      if (!origin) return callback(null, true);
 
-      const allowedOrigins = [
-        "https://x402-rwa-evm-011.vercel.app",
-        "http://localhost:3000",
-      ];
+const corsOptions: CorsOptions = {
+  origin: (
+    origin: string | undefined,
+    callback: (err: Error | null, allow?: boolean) => void
+  ) => {
+    if (!origin) {
+      callback(null, true);
+      return;
+    }
 
-      if (allowedOrigins.includes(origin)) {
-        callback(null, origin);
-      } else {
-        callback(new Error("Not allowed by CORS"));
-      }
-    },
-    credentials: true,
+    const allowedOrigins = [
+      "https://x402-rwa-evm-011.vercel.app",
+      "http://localhost:3000",
+    ];
 
-    // 🔑 VERY IMPORTANT
-    allowedHeaders: [
-      "Content-Type",
-      "Authorization",
-      "Access-Control-Expose-Headers",
-      "X-Payment",
-      "X-Payment-Token",
-      "X-Payment-Signature",
-      "X-402-Payment",
-    ],
+    if (allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
 
-    // 🔑 ALSO IMPORTANT
-    exposedHeaders: [
-      "X-Payment",
-      "X-Payment-Token",
-      "X-Payment-Signature",
-      "X-402-Payment",
-    ],
+  credentials: true,
 
-    methods: ["GET", "POST", "OPTIONS"],
-  })
-);
+  allowedHeaders: [
+    "Content-Type",
+    "Authorization",
+    "Access-Control-Expose-Headers",
+    "X-Payment",
+    "X-Payment-Token",
+    "X-Payment-Signature",
+    "X-402-Payment",
+  ],
+
+  exposedHeaders: [
+    "X-Payment",
+    "X-Payment-Token",
+    "X-Payment-Signature",
+    "X-402-Payment",
+  ],
+
+  methods: ["GET", "POST", "OPTIONS"],
+};
+
+app.use(cors(corsOptions));
+
 
 // Configuration
 const FACILITATOR_URL = 'https://facilitator.cronoslabs.org/v2/x402';
@@ -58,8 +65,9 @@ const PORT = 4000;
 // Protected API endpoint
 app.post('/api/purchase', async (req: Request, res: Response) => {
 
+  const { totalPrice } = req.body;
   const paymentHeader = req.headers['x-payment'] || req.body?.paymentHeader;
-  let mintTxHash: string;
+  const rawBalance = totalPrice * 1e6; // Convert to 6 decimal places
 
   // Step 1: Check if payment is provided
   if (!paymentHeader) {
@@ -73,7 +81,7 @@ app.post('/api/purchase', async (req: Request, res: Response) => {
         asset: USDX_CONTRACT,
         description: 'Premium API data access',
         mimeType: 'application/json',
-        maxAmountRequired: '100000', // 0.1 USDX (6 decimals)
+        maxAmountRequired: rawBalance.toString(), // 0.1 USDX (6 decimals)
         maxTimeoutSeconds: 300
       }
     });
@@ -90,7 +98,7 @@ app.post('/api/purchase', async (req: Request, res: Response) => {
         asset: USDX_CONTRACT,
         description: 'Premium API data access',
         mimeType: 'application/json',
-        maxAmountRequired: '100000',
+        maxAmountRequired: rawBalance.toString(),
         maxTimeoutSeconds: 300
       }
     };
@@ -115,26 +123,9 @@ app.post('/api/purchase', async (req: Request, res: Response) => {
     // Step 4: Check settlement and return content
     if (settleRes.data.event === 'payment.settled') {
 
-      const { propertyId, quantity, buyer, totalPrice } = req.body;
-
-      if (!propertyId || !quantity || !buyer || !totalPrice) {
-  return res.status(400).json({
-    ok: false,
-    error: "Missing purchase parameters",
-  });
-}
-
-
-  mintTxHash = await mintShares({
-    receiver: buyer,
-    propertyId: BigInt(propertyId),
-    amount: BigInt(quantity),
-    pricePaid: BigInt(Math.floor(Number(totalPrice) * 1e6)),
-  });
-
       return res.status(200).json({
         ok: true,
-        mintTxHash: mintTxHash,
+        mintTxHash: settleRes.data.txHash,
         payment: {
           txHash: settleRes.data.txHash,
           from: settleRes.data.from,
@@ -153,9 +144,9 @@ app.post('/api/purchase', async (req: Request, res: Response) => {
     }
   } catch (error: unknown) {
 
+    if (axios.isAxiosError(error)){
     console.log("FACILITATOR ERROR:", error.response?.data);
 
-    if (axios.isAxiosError(error)){
       return res.status(500).json({
         error: 'Server error processing payment',
         details: error.response?.data || error.message
@@ -180,27 +171,26 @@ app.post("/kyc/approve", async (req, res) => {
     const result = await approveKycUser(address);
     res.json(result);
   } catch (err) {
-    // console.error(err);
     res.status(500).json({ ok: false, error: "KYC approval failed" });
 
   }
 });
 
-// app.post("/purchase", async (req, res) => {
-//   const { propertyId, quantity, buyer, totalPrice } = req.body;
+app.post("/mint", async (req, res) => {
+  const { propertyId, quantity, buyer, totalPrice } = req.body;
 
-//   const mintTxHash = await mintShares({
-//     receiver: buyer,
-//     propertyId: BigInt(propertyId),
-//     amount: BigInt(quantity),
-//     pricePaid: BigInt(Math.floor(Number(totalPrice) * 1e6)),
-//   });
+  const mintTxHash = await mintShares({
+    receiver: buyer,
+    propertyId: BigInt(propertyId),
+    amount: BigInt(quantity),
+    pricePaid: BigInt(Math.floor(Number(totalPrice) * 1e6)),
+  });
 
-//   res.json({
-//     ok: true,
-//     mintTxHash: mintTxHash,
-//   });
-// });
+  res.json({
+    ok: true,
+    mintTxHash: mintTxHash,
+  });
+});
 
 app.listen(PORT, () => {
   console.log("Backend running on port ", PORT);

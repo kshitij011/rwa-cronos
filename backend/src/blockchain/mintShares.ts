@@ -32,7 +32,7 @@ export async function mintShares({
     abi: abi.abi,
     functionName: "buyShares",
     args: [propertyId, receiver, amount, pricePaid],
-    gas: 300_000n,
+    gas: 1_000_000n,
   });
 
   await publicClient.waitForTransactionReceipt({ hash });

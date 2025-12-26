@@ -8,9 +8,10 @@ interface PropertyListingsProps {
   onSelectProperty: (property: Property) => void;
   refreshKey: number;
   kycStatus: string;
+  num: number;
 }
 
-export function PropertyListings({ properties, kycStatus, onSelectProperty, refreshKey }: PropertyListingsProps) {
+export function PropertyListings({ properties, kycStatus, onSelectProperty, refreshKey, num }: PropertyListingsProps) {
 
   let isVerified;
   if(kycStatus === "verified") {
@@ -114,7 +115,8 @@ export function PropertyListings({ properties, kycStatus, onSelectProperty, refr
                       <p className="text-xs text-muted-foreground">Shares owned</p>
                       <p className="text-lg font-semibold text-gold">
                         {/* {ownedShares[property.id] ?? 0} */}
-                        {loading ? "…" : (shares[Number(property.id)]?.toString() ?? "0")}
+                        {/* {loading ? "…" : (shares[Number(property.id)]?.toString() ?? "0")} */}
+                        {localStorage.getItem(`TxNounce_${property.id}`)??0}
                       </p>
                     </div>
                   )}

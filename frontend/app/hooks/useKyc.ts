@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useAccount, usePublicClient } from "wagmi";
-import { baseSepolia } from "viem/chains";
+import { cronosTestnet } from "viem/chains";
 import { KYCStatus } from "@/app/lib/types";
 
 const KYC_CONTRACT = "0xC573C58EfFCdE6f66034566Be7f00153082cE2DB";
@@ -17,7 +17,7 @@ const KYC_ABI = [
 
 export function useKyc() {
   const { address } = useAccount();
-  const publicClient = usePublicClient({ chainId: baseSepolia.id });
+  const publicClient = usePublicClient({ chainId: cronosTestnet.id });
 
   const [kycStatus, setKycStatus] = useState<KYCStatus>("unverified");
   const [loading, setLoading] = useState(true);
@@ -30,6 +30,7 @@ export function useKyc() {
     }
 
     const checkKyc = async () => {
+      console.log("Checking KYC for address:", address);
       try {
         const isVerified = await publicClient.readContract({
           address: KYC_CONTRACT,
@@ -37,6 +38,8 @@ export function useKyc() {
           functionName: "isKycVerified",
           args: [address],
         });
+
+        console.log("KYC status for", address, "is", isVerified);
 
         setKycStatus(isVerified ? "verified" : "unverified");
 
@@ -53,7 +56,6 @@ export function useKyc() {
 
   const updateKycStatus = (newStatus: KYCStatus) => {
     setKycStatus(newStatus);
-    // localStorage.setItem("kycStatus", newStatus);
   };
 
   return {
