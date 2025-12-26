@@ -33,8 +33,6 @@ export default function LandingPage() {
     setRefreshKey((k) => k + 1);
   };
 
-  // console.log("KYC Status:", kycStatus);
-
   const handleSelectProperty = (property: Property) => {
     if (!isConnected) {
       toast({

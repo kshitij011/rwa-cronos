@@ -8,7 +8,6 @@ import { mintShares } from "./blockchain/mintShares.js";
 import cors from "cors";
 import type { CorsOptions } from "cors";
 
-
 const corsOptions: CorsOptions = {
   origin: (
     origin: string | undefined,

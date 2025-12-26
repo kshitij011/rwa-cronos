@@ -72,7 +72,3 @@ export function useUserShares(
 
   return { shares, loading };
 }
-
-// impl later:
-// await buySharesTx();
-// setRefreshKey((k) => k + 1);
