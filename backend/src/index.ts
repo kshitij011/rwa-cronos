@@ -19,8 +19,7 @@ const corsOptions: CorsOptions = {
     }
 
     const allowedOrigins = [
-      "https://rwa-cronos.vercel.app/",
-      "http://localhost:3000",
+      "https://rwa-cronos.vercel.app",
     ];
 
     if (allowedOrigins.includes(origin)) {
