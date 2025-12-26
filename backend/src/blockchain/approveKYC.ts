@@ -1,4 +1,4 @@
-import { walletClient, publicClient } from "./client.ts";
+import { walletClient, publicClient } from "./client.js";
 import abi  from "../../abi/RealEstateTokenization.json" with {type: "json"};
 
 const CONTRACT = "0xC573C58EfFCdE6f66034566Be7f00153082cE2DB";

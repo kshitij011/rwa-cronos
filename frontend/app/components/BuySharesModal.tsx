@@ -85,7 +85,7 @@ export function BuySharesModal({ open, onOpenChange, property, onSharesMinted, o
 
         const response = await x402Fetch( walletClient!,
           // "https://x402-rwa-evm.onrender.com/purchase",
-        "http://localhost:4000/api/purchase",
+        "https://rwa-cronos.onrender.com/api/purchase",
         {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -104,7 +104,7 @@ export function BuySharesModal({ open, onOpenChange, property, onSharesMinted, o
 
         const response2 = await x402Fetch( walletClient!,
           // "https://x402-rwa-evm.onrender.com/purchase",
-        "http://localhost:4000/mint",
+        "https://rwa-cronos.onrender.com/mint",
         {
             method: "POST",
             headers: { "Content-Type": "application/json" },

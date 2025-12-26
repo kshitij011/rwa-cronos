@@ -3,8 +3,8 @@ import express, {type Request, type Response} from 'express';
 import axios from 'axios';
 const app = express();
 app.use(express.json());
-import { approveKycUser } from "./blockchain/approveKYC.ts";
-import { mintShares } from "./blockchain/mintShares.ts";
+import { approveKycUser } from "./blockchain/approveKYC.js";
+import { mintShares } from "./blockchain/mintShares.js";
 import cors from "cors";
 import type { CorsOptions } from "cors";
 
@@ -20,7 +20,7 @@ const corsOptions: CorsOptions = {
     }
 
     const allowedOrigins = [
-      "https://x402-rwa-evm-011.vercel.app",
+      "https://rwa-cronos.vercel.app/",
       "http://localhost:3000",
     ];
 
