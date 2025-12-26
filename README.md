@@ -21,7 +21,7 @@ Our mission: **Make global real-estate investing accessible, transparent, and pe
 
 ## 🔧 Technical Overview
 
-### **1. Solana Program**
+### **1. Solidity Contract**
 
 The Estate Token smart contract is written in **Solidity using Hardhat**, fully tested and audited.
 
